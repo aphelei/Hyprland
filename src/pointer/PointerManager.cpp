@@ -334,6 +334,7 @@ void CPointerManager::updateCursorBackend() {
         }
 
         state->hardwareFailed = false;
+        damageSoftwareLeftover(state, m);
     }
 }
 

@@ -93,7 +93,14 @@ CMonitor::CMonitor(SP<Aquamarine::IOutput> output_) : m_name(output_->name), m_s
     m_specialBlur->setUpdateCallback([this](auto) { g_pHyprRenderer->damageMonitor(m_self.lock()); });
     static auto PZOOMFACTOR = CConfigValue<Config::FLOAT>("cursor:zoom_factor");
     Animation::mgr()->createAnimation(*PZOOMFACTOR, m_cursorZoom, Config::animationTree()->getAnimationPropertyConfig("zoomFactor"), AVARDAMAGE_NONE);
-    m_cursorZoom->setUpdateCallback([this](auto) { g_pHyprRenderer->damageMonitor(m_self.lock()); });
+    m_cursorZoom->setUpdateCallback([this](auto) {
+        auto mon = m_self.lock();
+        if (!mon || !g_pHyprRenderer)
+            return;
+        g_pHyprRenderer->damageMonitor(mon);
+        if (Pointer::mgr())
+            Pointer::mgr()->updateCursorBackend();
+    });
     Animation::mgr()->createAnimation(0.F, m_zoomAnimProgress, Config::animationTree()->getAnimationPropertyConfig("monitorAdded"), AVARDAMAGE_NONE);
     m_zoomAnimProgress->setUpdateCallback([this](auto) { g_pHyprRenderer->damageMonitor(m_self.lock()); });
     Animation::mgr()->createAnimation(0.F, m_backgroundOpacity, Config::animationTree()->getAnimationPropertyConfig("monitorAdded"), AVARDAMAGE_NONE);
@@ -2337,6 +2344,9 @@ bool CMonitor::shouldUseSoftwareCursors() {
         return true;
 
     if (*PINVISIBLE != 0)
+        return true;
+
+    if (m_cursorZoom->value() != 1.f && State::monitorState()->query().vec(Pointer::mgr()->position()).run() == m_self)
         return true;
 
     switch (*PNOHW) {

@@ -54,6 +54,7 @@ namespace Pointer {
         void unlockSoftwareAll();
         bool softwareLockedFor(PHLMONITOR pMonitor);
         bool hasVisibleHWCursor(PHLMONITOR pMonitor);
+        void updateCursorBackend();
 
         void renderSoftwareCursorsFor(PHLMONITOR pMonitor, const Time::steady_tp& now, CRegion& damage /* logical */, std::optional<Vector2D> overridePos = {} /* monitor-local */,
                                       bool screencopy = false, bool forceRender = false);
@@ -97,7 +98,6 @@ namespace Pointer {
         void recheckPointerPosition();
         void onMonitorLayoutChange();
         void onMonitorDisconnect();
-        void updateCursorBackend();
         void onCursorMoved();
         bool hasCursor();
         void damageIfSoftware();
